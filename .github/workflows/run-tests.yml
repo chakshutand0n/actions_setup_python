@@ -1,0 +1,36 @@
+name: Run tests
+
+on:
+  # push: # RT commented out
+  workflow_dispatch: # RT added
+  pull_request:
+    branches-ignore: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]    # RT updated list
+        os: [ubuntu-latest]                 # RT updated list
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python scripts/ci/install
+        python scripts/ci/install-check
+    - name: Run tests
+      run: python scripts/ci/run-tests --with-cov
+    - name: Run checks
+      run: python scripts/ci/run-check
+    # - name: codecov                             # RT commented out
+    #   uses: codecov/codecov-action@v5
+    #   with:
+    #     directory: tests
